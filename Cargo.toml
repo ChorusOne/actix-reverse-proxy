@@ -5,17 +5,15 @@ authors = ["Felipe Noronha <felipenoris@gmail.com>"]
 repository = "https://github.com/felipenoris/actix-reverse-proxy.git"
 description = "A simple configurable Reverse Proxy for the Actix framework."
 license = "MIT"
+edition = "2021"
 
 [lib]
 name = "actix_reverse_proxy"
 path = "src/lib.rs"
 
 [dependencies]
-actix-web = "0.7"
-futures = "0.1"
-lazy_static = "1.1"
-
-[profile.release]
-lto = true
-opt-level = 3
-codegen-units = 1
+actix-web = { version = "4" }
+awc = { version = "3", features = ["openssl"] }
+lazy_static = "1.4.0"
+openssl = { version = "^0.10" }
+tracing = "0.1.37"
