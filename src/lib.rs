@@ -40,7 +40,7 @@ static DEFAULT_TIMEOUT: Duration = Duration::from_secs(60);
 pub struct ReverseProxy<'a> {
     forward_host: &'a str,
     timeout: Duration,
-    response_size: usize
+    response_size: usize,
 }
 
 fn add_client_ip(fwd_header_value: &mut String, client_addr: SocketAddr) {
@@ -128,7 +128,8 @@ impl<'a> ReverseProxy<'a> {
         forward_uri
     }
 
-    pub async fn forward(&self,
+    pub async fn forward(
+        &self,
         req: &HttpRequest,
         body: Bytes,
     ) -> Result<actix_web::HttpResponse, actix_web::error::Error> {
@@ -146,6 +147,7 @@ impl<'a> ReverseProxy<'a> {
         // set headers from the client instead of default headers
         let mut forward_req = client
             .request_from(self.forward_uri(forward_path, &req).as_str(), req.head())
+            .no_decompress()
             .insert_header((
                 HEADER_X_FORWARDED_FOR.clone(),
                 self.x_forwarded_for_value(&req),
@@ -170,12 +172,12 @@ impl<'a> ReverseProxy<'a> {
 
         let header_connection = &(*HEADER_CONNECTION);
 
-        let mut connection_headers: HashSet<HeaderName> = resp
+        let connection_headers: HashSet<HeaderName> = resp
             .headers()
             .get_all(header_connection)
             .map(|v| HeaderName::from_bytes(v.as_bytes()).unwrap())
             .collect();
-        connection_headers.insert(HeaderName::from_lowercase(b"content-encoding").unwrap());
+
         // copy headers
         tracing::debug!("#### REVERSE PROXY RESPONSE HEADERS");
         for (key, value) in resp.headers() {
